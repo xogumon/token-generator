@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Token Generator</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.6.0/build/styles/github-dark-dimmed.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+  />
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #f5f5f5;
+      background-color: #22272e;
+    }
+
+    a {
+      color: #96d0ff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12 my-5">
+          <h1>Token generator</h1>
+          <p>Generate a Twitch token for Twitch PubSub.</p>
+          <div class="row">
+            <div class="col-12 mt-4">
+              <div class="token-output mb-4"></div>
+              <div class="scope-list">
+                <h4>Select your scopes</h4>
+                <table class="table table-dark table-striped-columns">
+                  <thead>
+                    <tr>
+                      <th>Scope</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="bitsread"
+                            name="scopes"
+                            value="bits:read"
+                          />
+                          <label class="form-check-label" for="bitsread"
+                            >bits:read</label
+                          >
+                        </div>
+                      </td>
+                      <td>Used for subscribing to the Bits topics.</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="channelreadredemptions"
+                            name="scopes"
+                            value="channel:read:redemptions"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="channelreadredemptions"
+                            >channel:read:redemptions</label
+                          >
+                        </div>
+                      </td>
+                      <td>
+                        Used for subscribing to the Channel Points topics.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="channelreadsubscriptions"
+                            name="scopes"
+                            value="channel:read:subscriptions"
+                          />
+                          <label
+                            class="form-check-label"
+                            for="channelreadsubscriptions"
+                            >channel:read:subscriptions</label
+                          >
+                        </div>
+                      </td>
+                      <td>Used for subscribing to the Subscription topics.</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="channelmoderate"
+                            name="scopes"
+                            value="channel:moderate"
+                          />
+                          <label class="form-check-label" for="channelmoderate"
+                            >channel:moderate</label
+                          >
+                        </div>
+                      </td>
+                      <td>
+                        Used for subscribing to the Channel Moderation topics.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="chatread"
+                            name="scopes"
+                            value="chat:read"
+                          />
+                          <label class="form-check-label" for="chatread"
+                            >chat:read</label
+                          >
+                        </div>
+                      </td>
+                      <td>
+                        Used for subscribing to the user moderation
+                        notifications topics.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="whispersread"
+                            name="scopes"
+                            value="whispers:read"
+                          />
+                          <label class="form-check-label" for="whispersread"
+                            >whispers:read</label
+                          >
+                        </div>
+                      </td>
+                      <td>Used for subscribing to the whispers topics.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="generate-token"
+                >
+                  Generate Token
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.6.0/build/highlight.min.js"></script>
+    <script>
+      window.onload = () => {
+        const clientId = "eipyhgddfyvrltazgwovyp8j5cnveq";
+        const redirectURI = "https://token.xog.one/";
+
+        let scopes = [];
+
+        document
+          .querySelector("#generate-token")
+          .addEventListener("click", function () {
+            scopes = Array.from(
+              document.querySelectorAll("input[name=scopes]:checked")
+            ).map((input) => input.value);
+            if (scopes.length === 0) {
+              alert("You must select at least one scope.");
+              return;
+            }
+            window.location.href = authUrl();
+          });
+
+        document
+          .querySelector(".token-output")
+          .addEventListener("mouseover", function () {
+            const text = this.innerText;
+            if (text.length === 0) {
+              return;
+            } else {
+              this.style.cursor = "pointer";
+            }
+            const range = document.createRange();
+            range.selectNodeContents(this);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            document.execCommand("copy");
+          });
+
+        function parseFragment(hash) {
+          const hashMatch = function (re) {
+            const match = hash.match(re);
+            return match ? match[1] : null;
+          };
+          const state = hashMatch(/state=(\w+)/);
+          if (sessionStorage.getItem("twitchOAuthState") === state) {
+            sessionStorage.setItem(
+              "twitchOAuthToken",
+              hashMatch(/token=(\w+)/)
+            );
+          }
+          return (window.location.hash = "");
+        }
+
+        function authUrl() {
+          const state = Math.random().toString(36).substring(2);
+          sessionStorage.setItem("twitchOAuthState", state);
+          return `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&response_type=token&scope=${scopes.join(
+            "%20"
+          )}&state=${state}`;
+        }
+
+        function validateToken() {
+          return new Promise(async (resolve, reject) => {
+            try {
+              const state = sessionStorage.getItem("twitchOAuthState");
+              const token = sessionStorage.getItem("twitchOAuthToken");
+              if (!token && !state) {
+                return resolve(false);
+              }
+              const response = await fetch(
+                "https://id.twitch.tv/oauth2/validate",
+                {
+                  headers: {
+                    Authorization: `OAuth ${token}`,
+                  },
+                }
+              );
+              const data = await response.json();
+              resolve({ ...data, token });
+            } catch (error) {
+              reject(error);
+            }
+          });
+        }
+
+        function highlightCode(code, addPreTag = true) {
+          return new Promise((resolve, reject) => {
+            try {
+              const hljs = window.hljs;
+              const highlight = hljs.highlightAuto(code);
+              const codeValue = `<code class="hljs lang-${highlight.language}">${highlight.value}</code>`;
+              const highlighted = addPreTag
+                ? `<pre class="highlight">${codeValue}</pre>`
+                : `<span class="highlight">${codeValue}</span>`;
+              resolve(highlighted);
+            } catch (error) {
+              reject(error);
+            }
+          });
+        }
+
+        (function () {
+          if (window.location.hash) {
+            parseFragment(window.location.hash);
+          }
+          validateToken()
+            .then((data) => {
+              if (data.token && data.user_id) {
+                const scopes = data.scopes.map((scope) => {
+                  const checkbox = document.querySelector(
+                    `#${scope.replace(/:/g, "")}`
+                  );
+                  if (checkbox) {
+                    checkbox.checked = true;
+                  }
+
+                  switch (scope) {
+                    case "bits:read":
+                      return `channel-bits-events-v2", "channel-bits-badge-unlocks`;
+                    case "channel:read:redemptions":
+                      return "channel-points-channel-v1";
+                    case "channel:read:subscriptions":
+                      return "channel-subscribe-events-v1";
+                    case "whispers:read":
+                      return "whispers";
+                    default:
+                      return;
+                  }
+                });
+                const cdnScript = document.createElement("script");
+                cdnScript.src =
+                  "https://cdn.jsdelivr.net/gh/xogumon/AnotherTwitchPubSub@next/dist/bundle.min.js";
+                const configScript = document.createElement("script");
+                configScript.innerHTML = `
+  const pubsub = new AnotherTwitchPubSub({
+    "accessToken": "${data.token}",
+    "topics": ["${scopes.join(
+      `", "`
+    )}"] // Add any topics you want to subscribe to here.
+  })
+  .on("connected", () => {
+    console.log("Connected");
+    pubsub.subscribe(["another-topic.userNameOrId.channelNameOrId"]); // Add additional topics here.
+  });
+`;
+                highlightCode(
+                  `${cdnScript.outerHTML}\n${configScript.outerHTML}`
+                ).then((highlighted) => {
+                  document.querySelector(".token-output").innerHTML =
+                    highlighted;
+                  document.querySelector("#generate-token").innerText =
+                    "Try Again";
+                });
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        })();
+      };
+    </script>
+  </body>
+</html>
